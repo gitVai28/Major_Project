@@ -1,0 +1,7 @@
+# Ignore node modules in any folder
+Backend/node_modules/
+Frontend/node_modules/
+
+# Ignore package-lock.json in any folder
+Backend/package-lock.json
+Frontend/package-lock.json

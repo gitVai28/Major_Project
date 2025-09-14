@@ -108,4 +108,37 @@ exports.deleteUserProfile = async (req, res) => {
   }
 };
 
+// Toggle role: If organizer = true → participant = false, and vice versa
+exports.toggleRole = async (req, res) => {
+  try {
+    const userId = req.user.id; // from JWT
+    const { role } = req.body;  // expects "organizer" or "participant"
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (role === "organizer") {
+      user.isOrganizer = true;
+      user.isParticipant = false;
+    } else if (role === "participant") {
+      user.isOrganizer = false;
+      user.isParticipant = true;
+    } else {
+      return res.status(400).json({ message: "Invalid role. Use 'organizer' or 'participant'." });
+    }
+
+    await user.save();
+
+    res.json({
+      message: `Role updated successfully. User is now ${role}.`,
+      user
+    });
+  } catch (error) {
+    console.error("Toggle role error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 

@@ -69,6 +69,17 @@
   <button id="deleteBtn">Delete Profile</button>
   <pre id="deleteResult"></pre>
 
+  <!-- ✅ New Section: Toggle Role -->
+  <h2>Toggle Role</h2>
+  <form id="toggleRoleForm">
+    <select id="toggleRole">
+      <option value="organizer">Organizer</option>
+      <option value="participant">Participant</option>
+    </select>
+    <button type="submit">Update Role</button>
+  </form>
+  <pre id="toggleRoleResult"></pre>
+
   <script>
     const API_USERS = "http://localhost:5000/api/users";
     const API_HOME = "http://localhost:5000/api/home";
@@ -222,6 +233,29 @@
         headers: { "Authorization": "Bearer " + authToken }
       });
       document.getElementById("deleteResult").textContent = JSON.stringify(await res.json(), null, 2);
+    });
+
+        // Toggle Role
+    document.getElementById("toggleRoleForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) {
+        document.getElementById("toggleRoleResult").textContent = "⚠️ Please login first!";
+        return;
+      }
+
+      const role = document.getElementById("toggleRole").value;
+
+      const res = await fetch(`${API_HOME}/toggle-role`, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + authToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ role })
+      });
+
+      document.getElementById("toggleRoleResult").textContent =
+        JSON.stringify(await res.json(), null, 2);
     });
 
   </script>

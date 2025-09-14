@@ -41,6 +41,34 @@
   </form>
   <pre id="uploadResult"></pre>
 
+  <!-- ✅ New Section: Get My Profile -->
+  <h2>Get My Profile</h2>
+  <button id="getUserBtn">Get Profile</button>
+  <pre id="getUserResult"></pre>
+
+  <!-- ✅ New Section: Update My Profile -->
+  <h2>Update My Profile</h2>
+  <form id="updateForm" enctype="multipart/form-data">
+     <input type="text" id="updateName" placeholder="New Name" />
+     <input type="text" id="updateSkills" placeholder="Skills (comma separated)" />
+     <input type="text" id="updateInterests" placeholder="Interests (comma separated)" />
+     <label>
+       <input type="checkbox" id="updateIsOrganizer" /> Is Organizer
+     </label>
+     <label>
+       <input type="checkbox" id="updateIsParticipant" checked /> Is Participant
+     </label>
+     <input type="file" id="updateProfilePhoto" accept="image/*" />
+     <button type="submit">Update</button>
+  </form>
+  <pre id="updateResult"></pre>
+
+
+  <!-- ✅ New Section: Delete My Profile -->
+  <h2>Delete My Profile</h2>
+  <button id="deleteBtn">Delete Profile</button>
+  <pre id="deleteResult"></pre>
+
   <script>
     const API_USERS = "http://localhost:5000/api/users";
     const API_HOME = "http://localhost:5000/api/home";
@@ -130,6 +158,72 @@
 
       document.getElementById("uploadResult").textContent = JSON.stringify(await res.json(), null, 2);
     });
+
+    // Get My Profile
+    document.getElementById("getUserBtn").addEventListener("click", async () => {
+      if (!authToken) {
+        document.getElementById("getUserResult").textContent = "⚠️ Please login first!";
+        return;
+      }
+      const res = await fetch(`${API_HOME}/me`, {
+        method: "GET",
+        headers: { "Authorization": "Bearer " + authToken }
+      });
+      document.getElementById("getUserResult").textContent = JSON.stringify(await res.json(), null, 2);
+    });
+
+    // Update My Profile
+    document.getElementById("updateForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) {
+        document.getElementById("updateResult").textContent = "⚠️ Please login first!";
+        return;
+      }
+
+     const formData = new FormData();
+
+     if (document.getElementById("updateName").value) {
+       formData.append("name", document.getElementById("updateName").value);
+     }
+     if (document.getElementById("updateSkills").value) {
+       formData.append("skills", document.getElementById("updateSkills").value);
+     }
+     if (document.getElementById("updateInterests").value) {
+       formData.append("interests", document.getElementById("updateInterests").value);
+     }
+
+     formData.append("isOrganizer", document.getElementById("updateIsOrganizer").checked);
+     formData.append("isParticipant", document.getElementById("updateIsParticipant").checked);
+
+     if (document.getElementById("updateProfilePhoto").files.length > 0) {
+       formData.append("profilePhoto", document.getElementById("updateProfilePhoto").files[0]);
+     }
+
+     const res = await fetch(`${API_HOME}/me`, {
+       method: "PUT",
+       headers: {
+        "Authorization": "Bearer " + authToken
+      },
+      body: formData
+     });
+
+     document.getElementById("updateResult").textContent = JSON.stringify(await res.json(), null, 2);
+    });
+
+
+    // Delete My Profile
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
+      if (!authToken) {
+        document.getElementById("deleteResult").textContent = "⚠️ Please login first!";
+        return;
+      }
+      const res = await fetch(`${API_HOME}/me`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + authToken }
+      });
+      document.getElementById("deleteResult").textContent = JSON.stringify(await res.json(), null, 2);
+    });
+
   </script>
 </body>
 </html>

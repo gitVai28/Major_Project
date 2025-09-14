@@ -1,7 +1,7 @@
 // routes/homeRoutes.js
 const express = require('express');
 const { verifyToken } = require('../middlewares/authMiddleware');
-const { homeController,uploadProfilePhoto } = require('../controllers/homeController');
+const { homeController,uploadProfilePhoto,getUser,updateUserProfile,deleteUserProfile } = require('../controllers/homeController');
 const upload = require("../middlewares/uploadMiddleware");
 
 
@@ -15,5 +15,9 @@ router.post(
   upload.single("profilePhoto"), // form field name must be "profilePhoto"
   uploadProfilePhoto
 );
+
+router.get("/me", verifyToken, getUser);                // Get profile
+router.put("/me", verifyToken,upload.single("profilePhoto"), updateUserProfile);      // Update profile
+router.delete("/me", verifyToken, deleteUserProfile);   // Delete profile
 
 module.exports = router;

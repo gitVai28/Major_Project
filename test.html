@@ -2,262 +2,758 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>API Test UI</title>
+  <title>API Test UI - Complete</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px; 
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      border-bottom: 3px solid #3498db;
+      padding-bottom: 10px;
+    }
+    h2 { 
+      color: #34495e; 
+      border-bottom: 2px solid #3498db; 
+      padding-bottom: 5px; 
+      margin-top: 30px;
+    }
+    .section {
+      background: #f8f9fa;
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #3498db;
+    }
+    form { 
+      margin-bottom: 15px; 
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    input, select, button, textarea { 
+      margin: 5px; 
+      padding: 10px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    input[type="text"], input[type="email"], input[type="password"], select {
+      min-width: 200px;
+    }
+    textarea {
+      min-width: 300px;
+      resize: vertical;
+    }
+    button { 
+      background: #3498db; 
+      color: white; 
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover { 
+      background: #2980b9; 
+    }
+    button.danger {
+      background: #e74c3c;
+    }
+    button.danger:hover {
+      background: #c0392b;
+    }
+    button.success {
+      background: #27ae60;
+    }
+    button.success:hover {
+      background: #229954;
+    }
+    pre { 
+      background: #2c3e50; 
+      color: #ecf0f1;
+      padding: 15px; 
+      border-radius: 4px; 
+      max-height: 300px; 
+      overflow-y: auto;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+    .warning { 
+      color: #e74c3c; 
+      font-weight: bold; 
+    }
+    .success {
+      color: #27ae60;
+      font-weight: bold;
+    }
+    .token-display { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px; 
+      margin: 15px 0; 
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .status-online {
+      background-color: #27ae60;
+    }
+    .status-offline {
+      background-color: #e74c3c;
+    }
+  </style>
 </head>
 <body>
-  <h2>Register</h2>
-  <form id="registerForm">
-    <input type="text" id="regName" placeholder="Name" required />
-    <input type="email" id="regEmail" placeholder="Email" required />
-    <input type="password" id="regPassword" placeholder="Password" required />
-    <button type="submit">Register</button>
-  </form>
-  <pre id="registerResult"></pre>
+  <div class="container">
+    <h1><span class="status-indicator" id="serverStatus"></span>API Test Interface</h1>
+    
+    <div class="token-display">
+      <strong>🔐 Auth Token:</strong> <span id="tokenDisplay">Not logged in</span>
+    </div>
 
-  <h2>Verify Email</h2>
-  <form id="verifyForm">
-    <input type="email" id="verifyEmail" placeholder="Email" required />
-    <input type="text" id="verifyOtp" placeholder="OTP" required />
-    <button type="submit">Verify</button>
-  </form>
-  <pre id="verifyResult"></pre>
+    <div class="grid">
+      <!-- USER AUTHENTICATION -->
+      <div class="section">
+        <h2>👤 User Authentication</h2>
+        
+        <h3>Register</h3>
+        <form id="registerForm">
+          <input type="text" id="regName" placeholder="Full Name" required />
+          <input type="email" id="regEmail" placeholder="Email Address" required />
+          <input type="password" id="regPassword" placeholder="Password" required />
+          <button type="submit" class="success">Register</button>
+        </form>
+        <pre id="registerResult"></pre>
 
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="email" id="loginEmail" placeholder="Email" required />
-    <input type="password" id="loginPassword" placeholder="Password" required />
-    <button type="submit">Login</button>
-  </form>
-  <pre id="loginResult"></pre>
+        <h3>Verify Email</h3>
+        <form id="verifyForm">
+          <input type="email" id="verifyEmail" placeholder="Email" required />
+          <input type="text" id="verifyOtp" placeholder="6-digit OTP" required />
+          <button type="submit">Verify Email</button>
+        </form>
+        <pre id="verifyResult"></pre>
 
-  <h2>Home</h2>
-  <button id="homeBtn">Go to Home</button>
-  <pre id="homeResult"></pre>
+        <h3>Login</h3>
+        <form id="loginForm">
+          <input type="email" id="loginEmail" placeholder="Email" required />
+          <input type="password" id="loginPassword" placeholder="Password" required />
+          <button type="submit" class="success">Login</button>
+        </form>
+        <pre id="loginResult"></pre>
+      </div>
 
-  <h2>Upload Profile Photo</h2>
-  <form id="uploadForm" enctype="multipart/form-data">
-    <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" required />
-    <button type="submit">Upload</button>
-  </form>
-  <pre id="uploadResult"></pre>
+      <!-- USER PROFILE -->
+      <div class="section">
+        <h2>🏠 User Profile & Home</h2>
+        
+        <button id="homeBtn">🏠 Go to Home</button>
+        <pre id="homeResult"></pre>
 
-  <!-- ✅ New Section: Get My Profile -->
-  <h2>Get My Profile</h2>
-  <button id="getUserBtn">Get Profile</button>
-  <pre id="getUserResult"></pre>
+        <h3>Upload Profile Photo</h3>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" required />
+          <button type="submit">📷 Upload Photo</button>
+        </form>
+        <pre id="uploadResult"></pre>
 
-  <!-- ✅ New Section: Update My Profile -->
-  <h2>Update My Profile</h2>
-  <form id="updateForm" enctype="multipart/form-data">
-     <input type="text" id="updateName" placeholder="New Name" />
-     <input type="text" id="updateSkills" placeholder="Skills (comma separated)" />
-     <input type="text" id="updateInterests" placeholder="Interests (comma separated)" />
-     <label>
-       <input type="checkbox" id="updateIsOrganizer" /> Is Organizer
-     </label>
-     <label>
-       <input type="checkbox" id="updateIsParticipant" checked /> Is Participant
-     </label>
-     <input type="file" id="updateProfilePhoto" accept="image/*" />
-     <button type="submit">Update</button>
-  </form>
-  <pre id="updateResult"></pre>
+        <button id="getUserBtn">👤 Get My Profile</button>
+        <pre id="getUserResult"></pre>
 
+        <h3>Update Profile</h3>
+        <form id="updateForm" enctype="multipart/form-data">
+           <input type="text" id="updateName" placeholder="New Name" />
+           <input type="text" id="updateSkills" placeholder="Skills (comma separated)" />
+           <input type="text" id="updateInterests" placeholder="Interests (comma separated)" />
+           <label>
+             <input type="checkbox" id="updateIsOrganizer" /> Is Organizer
+           </label>
+           <label>
+             <input type="checkbox" id="updateIsParticipant" checked /> Is Participant
+           </label>
+           <input type="file" id="updateProfilePhoto" accept="image/*" />
+           <button type="submit">✏️ Update Profile</button>
+        </form>
+        <pre id="updateResult"></pre>
 
-  <!-- ✅ New Section: Delete My Profile -->
-  <h2>Delete My Profile</h2>
-  <button id="deleteBtn">Delete Profile</button>
-  <pre id="deleteResult"></pre>
+        <button id="deleteBtn" class="danger">🗑️ Delete My Profile</button>
+        <pre id="deleteResult"></pre>
 
-  <!-- ✅ New Section: Toggle Role -->
-  <h2>Toggle Role</h2>
-  <form id="toggleRoleForm">
-    <select id="toggleRole">
-      <option value="organizer">Organizer</option>
-      <option value="participant">Participant</option>
-    </select>
-    <button type="submit">Update Role</button>
-  </form>
-  <pre id="toggleRoleResult"></pre>
+        <h3>Toggle Role</h3>
+        <form id="toggleRoleForm">
+          <select id="toggleRole">
+            <option value="organizer">👔 Organizer</option>
+            <option value="participant">👥 Participant</option>
+          </select>
+          <button type="submit">🔄 Update Role</button>
+        </form>
+        <pre id="toggleRoleResult"></pre>
+      </div>
+    </div>
+
+    <!-- EVENT MANAGEMENT -->
+    <div class="section">
+      <h2>🎉 Event Management</h2>
+      
+      <div class="grid">
+        <div>
+          <h3>Create Event (Organizers Only)</h3>
+          <form id="createEventForm" enctype="multipart/form-data">
+            <input type="text" id="eventTitle" placeholder="Event Title" required />
+            <textarea id="eventDescription" placeholder="Event Description" required rows="3"></textarea>
+            <input type="text" id="eventLocation" placeholder="Event Location" required />
+            <label>📅 Event Date:</label>
+            <input type="datetime-local" id="eventDate" required />
+            <label>⏰ Registration Deadline:</label>
+            <input type="datetime-local" id="eventLastDate" required />
+            <input type="file" id="eventBanner" accept="image/*" />
+            <button type="submit" class="success">🎯 Create Event</button>
+          </form>
+          <pre id="createEventResult"></pre>
+        </div>
+
+        <div>
+          <h3>Browse Events</h3>
+          <button id="getAllEventsBtn" class="success">📋 Fetch All Events</button>
+          <pre id="getAllEventsResult"></pre>
+
+          <h3>Get Specific Event</h3>
+          <form id="getEventForm">
+            <input type="text" id="getEventId" placeholder="Event ID" required />
+            <button type="submit">🔍 Get Event Details</button>
+          </form>
+          <pre id="getEventResult"></pre>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <h3>Update Event</h3>
+          <form id="updateEventForm" enctype="multipart/form-data">
+            <input type="text" id="updateEventId" placeholder="Event ID" required />
+            <input type="text" id="updateEventTitle" placeholder="New Title" />
+            <textarea id="updateEventDescription" placeholder="New Description" rows="3"></textarea>
+            <input type="text" id="updateEventLocation" placeholder="New Location" />
+            <label>📅 New Event Date:</label>
+            <input type="datetime-local" id="updateEventDate" />
+            <label>⏰ New Registration Deadline:</label>
+            <input type="datetime-local" id="updateEventLastDate" />
+            <input type="file" id="updateEventBanner" accept="image/*" />
+            <button type="submit">✏️ Update Event</button>
+          </form>
+          <pre id="updateEventResult"></pre>
+        </div>
+
+        <div>
+          <h3>Delete Event</h3>
+          <form id="deleteEventForm">
+            <input type="text" id="deleteEventId" placeholder="Event ID" required />
+            <button type="submit" class="danger">🗑️ Delete Event</button>
+          </form>
+          <pre id="deleteEventResult"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTRATION MANAGEMENT -->
+    <div class="section">
+      <h2>📝 Event Registration</h2>
+      
+      <div class="grid">
+        <div>
+          <h3>Register for Event</h3>
+          <form id="registerEventForm">
+            <input type="text" id="registerEventId" placeholder="Event ID" required />
+            <button type="submit" class="success">✅ Register for Event</button>
+          </form>
+          <pre id="registerEventResult"></pre>
+        </div>
+
+        <div>
+          <h3>View Event Participants</h3>
+          <form id="getParticipantsForm">
+            <input type="text" id="participantsEventId" placeholder="Event ID" required />
+            <button type="submit">👥 Get Participants</button>
+          </form>
+          <pre id="getParticipantsResult"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGE SYSTEM -->
+    <div class="section">
+      <h2>💬 Messaging System</h2>
+      
+      <h3>Send Message to Event Participants (Organizers Only)</h3>
+      <form id="sendMessageForm">
+        <input type="text" id="messageEventId" placeholder="Event ID" required />
+        <input type="text" id="messageSubject" placeholder="Email Subject" required />
+        <textarea id="messageContent" placeholder="Message Content" required rows="4"></textarea>
+        <button type="submit" class="success">📧 Send Message</button>
+      </form>
+      <pre id="sendMessageResult"></pre>
+    </div>
+
+    <!-- SERVER STATUS -->
+    <div class="section">
+      <h2>🔧 Server Status</h2>
+      <button id="checkServerBtn">🔍 Check Server Status</button>
+      <pre id="serverStatusResult"></pre>
+    </div>
+  </div>
 
   <script>
-    const API_USERS = "http://localhost:5000/api/users";
-    const API_HOME = "http://localhost:5000/api/home";
+    // API Endpoints
+    const API_BASE = "http://localhost:5000/api";
+    const API_USERS = `${API_BASE}/users`;
+    const API_HOME = `${API_BASE}/home`;
+    const API_EVENTS = `${API_BASE}/events`;
+    const API_REGISTRATIONS = `${API_BASE}/registrations`;
+    const API_MESSAGES = `${API_BASE}/messages`;
 
-    let authToken = null; // store JWT token after login
+    let authToken = null;
 
-    // Register
+    // Utility Functions
+    function updateTokenDisplay() {
+      const display = document.getElementById("tokenDisplay");
+      if (authToken) {
+        display.innerHTML = `<span class="success">${authToken.substring(0, 30)}...</span>`;
+      } else {
+        display.innerHTML = `<span class="warning">Not logged in</span>`;
+      }
+    }
+
+    function showError(elementId, message) {
+      document.getElementById(elementId).innerHTML = `<span class="warning">❌ ${message}</span>`;
+    }
+
+    function showSuccess(elementId, message) {
+      document.getElementById(elementId).innerHTML = `<span class="success">✅ ${message}</span>`;
+    }
+
+    function formatResponse(data) {
+      return JSON.stringify(data, null, 2);
+    }
+
+    // Check server status on load
+    async function checkServerStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/home`);
+        const statusIndicator = document.getElementById("serverStatus");
+        if (res.status === 401 || res.ok) {
+          statusIndicator.className = "status-indicator status-online";
+          document.getElementById("serverStatusResult").innerHTML = '<span class="success">✅ Server is running</span>';
+        } else {
+          statusIndicator.className = "status-indicator status-offline";
+        }
+      } catch (error) {
+        document.getElementById("serverStatus").className = "status-indicator status-offline";
+        document.getElementById("serverStatusResult").innerHTML = '<span class="warning">❌ Server is offline</span>';
+      }
+    }
+
+    // Authentication APIs
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const res = await fetch(`${API_USERS}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: document.getElementById("regName").value,
-          email: document.getElementById("regEmail").value,
-          password: document.getElementById("regPassword").value,
-        }),
-      });
-      document.getElementById("registerResult").textContent = JSON.stringify(await res.json(), null, 2);
+      try {
+        const res = await fetch(`${API_USERS}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: document.getElementById("regName").value,
+            email: document.getElementById("regEmail").value,
+            password: document.getElementById("regPassword").value,
+          }),
+        });
+        const data = await res.json();
+        document.getElementById("registerResult").textContent = formatResponse(data);
+        if (res.ok) {
+          showSuccess("registerResult", "Registration successful! Check your email for OTP.");
+        }
+      } catch (error) {
+        showError("registerResult", error.message);
+      }
     });
 
-    // Verify Email
     document.getElementById("verifyForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const res = await fetch(`${API_USERS}/verify-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: document.getElementById("verifyEmail").value,
-          otp: document.getElementById("verifyOtp").value,
-        }),
-      });
-      document.getElementById("verifyResult").textContent = JSON.stringify(await res.json(), null, 2);
+      try {
+        const res = await fetch(`${API_USERS}/verify-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("verifyEmail").value,
+            otp: document.getElementById("verifyOtp").value,
+          }),
+        });
+        const data = await res.json();
+        document.getElementById("verifyResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("verifyResult", error.message);
+      }
     });
 
-    // Login
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const res = await fetch(`${API_USERS}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: document.getElementById("loginEmail").value,
-          password: document.getElementById("loginPassword").value,
-        }),
-      });
-      const data = await res.json();
-      document.getElementById("loginResult").textContent = JSON.stringify(data, null, 2);
-
-      // Save JWT token
-      if (data.token) {
-        authToken = data.token;
+      try {
+        const res = await fetch(`${API_USERS}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("loginEmail").value,
+            password: document.getElementById("loginPassword").value,
+          }),
+        });
+        const data = await res.json();
+        document.getElementById("loginResult").textContent = formatResponse(data);
+        if (data.token) {
+          authToken = data.token;
+          updateTokenDisplay();
+          showSuccess("loginResult", "Login successful!");
+        }
+      } catch (error) {
+        showError("loginResult", error.message);
       }
     });
 
-    // Home (Protected route)
+    // Home & Profile APIs
     document.getElementById("homeBtn").addEventListener("click", async () => {
-      if (!authToken) {
-        document.getElementById("homeResult").textContent = "⚠️ Please login first!";
-        return;
+      if (!authToken) return showError("homeResult", "Please login first!");
+      try {
+        const res = await fetch(API_HOME, { 
+          headers: { "Authorization": "Bearer " + authToken } 
+        });
+        const data = await res.json();
+        document.getElementById("homeResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("homeResult", error.message);
       }
-      const res = await fetch(API_HOME, {
-        method: "GET",
-        headers: { "Authorization": "Bearer " + authToken }
-      });
-      document.getElementById("homeResult").textContent = JSON.stringify(await res.json(), null, 2);
     });
 
-    // Upload Profile Photo
     document.getElementById("uploadForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!authToken) {
-        document.getElementById("uploadResult").textContent = "⚠️ Please login first!";
-        return;
+      if (!authToken) return showError("uploadResult", "Please login first!");
+      try {
+        const formData = new FormData();
+        formData.append("profilePhoto", document.getElementById("profilePhoto").files[0]);
+        const res = await fetch(`${API_HOME}/upload-photo`, { 
+          method: "POST", 
+          headers: { "Authorization": "Bearer " + authToken }, 
+          body: formData 
+        });
+        const data = await res.json();
+        document.getElementById("uploadResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("uploadResult", error.message);
       }
-
-      const formData = new FormData();
-      formData.append("profilePhoto", document.getElementById("profilePhoto").files[0]);
-
-      const res = await fetch(`${API_HOME}/upload-photo`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + authToken
-        },
-        body: formData
-      });
-
-      document.getElementById("uploadResult").textContent = JSON.stringify(await res.json(), null, 2);
     });
 
-    // Get My Profile
     document.getElementById("getUserBtn").addEventListener("click", async () => {
-      if (!authToken) {
-        document.getElementById("getUserResult").textContent = "⚠️ Please login first!";
-        return;
+      if (!authToken) return showError("getUserResult", "Please login first!");
+      try {
+        const res = await fetch(`${API_HOME}/me`, { 
+          headers: { "Authorization": "Bearer " + authToken } 
+        });
+        const data = await res.json();
+        document.getElementById("getUserResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("getUserResult", error.message);
       }
-      const res = await fetch(`${API_HOME}/me`, {
-        method: "GET",
-        headers: { "Authorization": "Bearer " + authToken }
-      });
-      document.getElementById("getUserResult").textContent = JSON.stringify(await res.json(), null, 2);
     });
 
-    // Update My Profile
     document.getElementById("updateForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!authToken) {
-        document.getElementById("updateResult").textContent = "⚠️ Please login first!";
-        return;
+      if (!authToken) return showError("updateResult", "Please login first!");
+      try {
+        const formData = new FormData();
+        if (document.getElementById("updateName").value) formData.append("name", document.getElementById("updateName").value);
+        if (document.getElementById("updateSkills").value) formData.append("skills", document.getElementById("updateSkills").value);
+        if (document.getElementById("updateInterests").value) formData.append("interests", document.getElementById("updateInterests").value);
+        formData.append("isOrganizer", document.getElementById("updateIsOrganizer").checked);
+        formData.append("isParticipant", document.getElementById("updateIsParticipant").checked);
+        if (document.getElementById("updateProfilePhoto").files.length > 0) formData.append("profilePhoto", document.getElementById("updateProfilePhoto").files[0]);
+        const res = await fetch(`${API_HOME}/me`, { 
+          method: "PUT", 
+          headers: { "Authorization": "Bearer " + authToken }, 
+          body: formData 
+        });
+        const data = await res.json();
+        document.getElementById("updateResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("updateResult", error.message);
       }
-
-     const formData = new FormData();
-
-     if (document.getElementById("updateName").value) {
-       formData.append("name", document.getElementById("updateName").value);
-     }
-     if (document.getElementById("updateSkills").value) {
-       formData.append("skills", document.getElementById("updateSkills").value);
-     }
-     if (document.getElementById("updateInterests").value) {
-       formData.append("interests", document.getElementById("updateInterests").value);
-     }
-
-     formData.append("isOrganizer", document.getElementById("updateIsOrganizer").checked);
-     formData.append("isParticipant", document.getElementById("updateIsParticipant").checked);
-
-     if (document.getElementById("updateProfilePhoto").files.length > 0) {
-       formData.append("profilePhoto", document.getElementById("updateProfilePhoto").files[0]);
-     }
-
-     const res = await fetch(`${API_HOME}/me`, {
-       method: "PUT",
-       headers: {
-        "Authorization": "Bearer " + authToken
-      },
-      body: formData
-     });
-
-     document.getElementById("updateResult").textContent = JSON.stringify(await res.json(), null, 2);
     });
 
-
-    // Delete My Profile
     document.getElementById("deleteBtn").addEventListener("click", async () => {
-      if (!authToken) {
-        document.getElementById("deleteResult").textContent = "⚠️ Please login first!";
-        return;
+      if (!authToken) return showError("deleteResult", "Please login first!");
+      if (!confirm("Are you sure you want to delete your profile? This action cannot be undone.")) return;
+      try {
+        const res = await fetch(`${API_HOME}/me`, { 
+          method: "DELETE", 
+          headers: { "Authorization": "Bearer " + authToken } 
+        });
+        const data = await res.json();
+        document.getElementById("deleteResult").textContent = formatResponse(data);
+        if (res.ok) {
+          authToken = null;
+          updateTokenDisplay();
+        }
+      } catch (error) {
+        showError("deleteResult", error.message);
       }
-      const res = await fetch(`${API_HOME}/me`, {
-        method: "DELETE",
-        headers: { "Authorization": "Bearer " + authToken }
-      });
-      document.getElementById("deleteResult").textContent = JSON.stringify(await res.json(), null, 2);
     });
 
-        // Toggle Role
     document.getElementById("toggleRoleForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!authToken) {
-        document.getElementById("toggleRoleResult").textContent = "⚠️ Please login first!";
-        return;
+      if (!authToken) return showError("toggleRoleResult", "Please login first!");
+      try {
+        const role = document.getElementById("toggleRole").value;
+        const res = await fetch(`${API_HOME}/toggle-role`, {
+          method: "PUT", 
+          headers: { 
+            "Authorization": "Bearer " + authToken, 
+            "Content-Type": "application/json" 
+          }, 
+          body: JSON.stringify({ role })
+        });
+        const data = await res.json();
+        document.getElementById("toggleRoleResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("toggleRoleResult", error.message);
       }
-
-      const role = document.getElementById("toggleRole").value;
-
-      const res = await fetch(`${API_HOME}/toggle-role`, {
-        method: "PUT",
-        headers: {
-          "Authorization": "Bearer " + authToken,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ role })
-      });
-
-      document.getElementById("toggleRoleResult").textContent =
-        JSON.stringify(await res.json(), null, 2);
     });
 
+    // Event APIs
+    document.getElementById("createEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) return showError("createEventResult", "Please login first!");
+      
+      try {
+        const formData = new FormData();
+        formData.append("title", document.getElementById("eventTitle").value);
+        formData.append("description", document.getElementById("eventDescription").value);
+        formData.append("location", document.getElementById("eventLocation").value);
+        formData.append("date", document.getElementById("eventDate").value);
+        formData.append("lastDateToRegister", document.getElementById("eventLastDate").value);
+        
+        if (document.getElementById("eventBanner").files.length > 0) {
+          formData.append("banner", document.getElementById("eventBanner").files[0]);
+        }
+        
+        const res = await fetch(API_EVENTS, { 
+          method: "POST", 
+          headers: { "Authorization": "Bearer " + authToken }, 
+          body: formData 
+        });
+        
+        const data = await res.json();
+        document.getElementById("createEventResult").textContent = formatResponse(data);
+        
+        if (res.ok) {
+          document.getElementById("createEventForm").reset();
+          showSuccess("createEventResult", "Event created successfully!");
+        }
+      } catch (error) {
+        showError("createEventResult", error.message);
+      }
+    });
+
+    document.getElementById("getAllEventsBtn").addEventListener("click", async () => {
+      try {
+        const res = await fetch(API_EVENTS);
+        const data = await res.json();
+        document.getElementById("getAllEventsResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("getAllEventsResult", error.message);
+      }
+    });
+
+    document.getElementById("getEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        const id = document.getElementById("getEventId").value;
+        const res = await fetch(`${API_EVENTS}/${id}`);
+        const data = await res.json();
+        document.getElementById("getEventResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("getEventResult", error.message);
+      }
+    });
+
+    document.getElementById("updateEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) return showError("updateEventResult", "Please login first!");
+      
+      try {
+        const id = document.getElementById("updateEventId").value;
+        const formData = new FormData();
+        
+        if (document.getElementById("updateEventTitle").value) 
+          formData.append("title", document.getElementById("updateEventTitle").value);
+        if (document.getElementById("updateEventDescription").value) 
+          formData.append("description", document.getElementById("updateEventDescription").value);
+        if (document.getElementById("updateEventLocation").value) 
+          formData.append("location", document.getElementById("updateEventLocation").value);
+        if (document.getElementById("updateEventDate").value) 
+          formData.append("date", document.getElementById("updateEventDate").value);
+        if (document.getElementById("updateEventLastDate").value) 
+          formData.append("lastDateToRegister", document.getElementById("updateEventLastDate").value);
+        if (document.getElementById("updateEventBanner").files.length > 0) 
+          formData.append("banner", document.getElementById("updateEventBanner").files[0]);
+        
+        const res = await fetch(`${API_EVENTS}/${id}`, { 
+          method: "PUT", 
+          headers: { "Authorization": "Bearer " + authToken }, 
+          body: formData 
+        });
+        const data = await res.json();
+        document.getElementById("updateEventResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("updateEventResult", error.message);
+      }
+    });
+
+    document.getElementById("deleteEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) return showError("deleteEventResult", "Please login first!");
+      if (!confirm("Are you sure you want to delete this event?")) return;
+      
+      try {
+        const id = document.getElementById("deleteEventId").value;
+        const res = await fetch(`${API_EVENTS}/${id}`, { 
+          method: "DELETE", 
+          headers: { "Authorization": "Bearer " + authToken } 
+        });
+        const data = await res.json();
+        document.getElementById("deleteEventResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("deleteEventResult", error.message);
+      }
+    });
+
+    // Registration APIs
+    document.getElementById("registerEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) return showError("registerEventResult", "Please login first!");
+      
+      try {
+        const eventId = document.getElementById("registerEventId").value;
+        
+        const res = await fetch(`${API_REGISTRATIONS}/register`, {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + authToken,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ eventId })
+        });
+        
+        const data = await res.json();
+        document.getElementById("registerEventResult").textContent = formatResponse(data);
+        
+        if (res.ok) {
+          document.getElementById("registerEventForm").reset();
+          showSuccess("registerEventResult", "Successfully registered for event!");
+        }
+      } catch (error) {
+        showError("registerEventResult", error.message);
+      }
+    });
+
+    document.getElementById("getParticipantsForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) return showError("getParticipantsResult", "Please login first!");
+      
+      try {
+        const eventId = document.getElementById("participantsEventId").value;
+        
+        const res = await fetch(`${API_REGISTRATIONS}/${eventId}/participants`, {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + authToken
+          }
+        });
+        
+        const data = await res.json();
+        document.getElementById("getParticipantsResult").textContent = formatResponse(data);
+      } catch (error) {
+        showError("getParticipantsResult", error.message);
+      }
+    });
+
+    // 💬 NEW: Message API
+    document.getElementById("sendMessageForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authToken) return showError("sendMessageResult", "Please login first!");
+      
+      try {
+        const eventId = document.getElementById("messageEventId").value;
+        const subject = document.getElementById("messageSubject").value;
+        const message = document.getElementById("messageContent").value;
+        
+        console.log("Sending message to participants:", { eventId, subject, message });
+        
+        const res = await fetch(`${API_MESSAGES}/${eventId}/message`, {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + authToken,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ 
+            subject: subject,
+            message: message 
+          })
+        });
+        
+        const data = await res.json();
+        document.getElementById("sendMessageResult").textContent = formatResponse(data);
+        
+        if (res.ok) {
+          document.getElementById("sendMessageForm").reset();
+          showSuccess("sendMessageResult", `Message sent successfully to ${data.sentTo} participants!`);
+        }
+      } catch (error) {
+        showError("sendMessageResult", error.message);
+      }
+    });
+
+    // Server Status Check
+    document.getElementById("checkServerBtn").addEventListener("click", checkServerStatus);
+
+    // Initialize
+    updateTokenDisplay();
+    checkServerStatus();
   </script>
 </body>
 </html>

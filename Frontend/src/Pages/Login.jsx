@@ -15,8 +15,14 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await api.login(form);
-      login({ email: form.email }, res.token);
-      navigate("/dashboard");
+
+      // ✅ Pass backend's full user object and token
+      if (res.token && res.user) {
+        login(res.user, res.token);
+        navigate("/dashboard");
+      } else {
+        alert("Invalid server response");
+      }
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
       console.error(err);

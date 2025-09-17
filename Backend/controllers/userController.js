@@ -8,14 +8,14 @@ require('dotenv').config();
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.EMAIL_USER,   // your Gmail
-        pass: process.env.EMAIL_PASS    // your App Password (16-digit)
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
 // Helper to generate OTP
 const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
 // ------------------- Register User -------------------
@@ -32,7 +32,7 @@ exports.registerUser = async (req, res) => {
 
         // Generate OTP
         const otp = generateOTP();
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mins
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
         // Create user
         const newUser = await User.create({
@@ -43,10 +43,11 @@ exports.registerUser = async (req, res) => {
             skills: skills || [],
             interests: interests || [],
             otp,
-            otpExpiry
+            otpExpiry,
+            isVerified: false
         });
 
-        // Send OTP email via Gmail
+        // Send OTP email
         await transporter.sendMail({
             from: `"Major Project" <${process.env.EMAIL_USER}>`,
             to: email,
@@ -56,7 +57,17 @@ exports.registerUser = async (req, res) => {
                    <p>It will expire in 10 minutes.</p>`
         });
 
-        res.status(201).json({ message: 'User registered. Please verify your email.' });
+        res.status(201).json({
+            message: 'User registered. Please verify your email.',
+            user: {
+                id: newUser.id,
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.isOrganizer ? "Organizer" : "Participant",
+                skills: newUser.skills || [],
+                interests: newUser.interests || []
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -82,7 +93,25 @@ exports.verifyEmail = async (req, res) => {
         user.otpExpiry = null;
         await user.save();
 
-        res.status(200).json({ message: 'Email verified successfully' });
+        // Generate JWT right after verification
+        const token = jwt.sign(
+            { id: user.id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.status(200).json({
+            message: 'Email verified successfully',
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.isOrganizer ? "Organizer" : "Participant",
+                skills: user.skills || [],
+                interests: user.interests || []
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -109,12 +138,20 @@ exports.loginUser = async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        res.status(200).json({ message: 'Login successful', token });
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.isOrganizer ? "Organizer" : "Participant",
+                skills: user.skills || [],
+                interests: user.interests || []
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 };
-
-
-

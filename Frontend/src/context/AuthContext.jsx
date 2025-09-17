@@ -8,22 +8,35 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      setUser({ email: localStorage.getItem("email") });
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (error) {
+          console.error("Error parsing stored user:", error);
+          localStorage.removeItem("user");
+        }
+      }
     }
   }, [token]);
 
   const login = (userData, token) => {
+    if (!userData?.name) {
+      console.warn("⚠️ userData has no 'name' field, please check backend response");
+    }
+
     setUser(userData);
     setToken(token);
+
     localStorage.setItem("token", token);
-    localStorage.setItem("email", userData.email);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("token");
-    localStorage.removeItem("email");
+    localStorage.removeItem("user");
   };
 
   return (

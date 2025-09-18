@@ -1,4 +1,3 @@
-// userApi.js
 import axios from "./axiosConfig";
 
 // -------- Existing --------
@@ -21,17 +20,16 @@ export const getUserProfile = async () => {
   return res.data;
 };
 
-export const updateUserProfile = async (data) => {
-  const res = await axios.put("/dashboard/user", data);
-  return res.data;
-};
-
-export const uploadProfilePhoto = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
+// ✅ Updated uploadProfilePhoto
+export const uploadProfilePhoto = async (formData) => {
   const res = await axios.post("/dashboard/upload-photo", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return res.data;
+};
+
+export const updateUserProfile = async (data) => {
+  const res = await axios.put("/dashboard/user", data);
   return res.data;
 };
 
@@ -40,12 +38,10 @@ export const deleteUserProfile = async () => {
   return res.data;
 };
 
-
 export const toggleRole = async (role) => {
   const res = await axios.put("/dashboard/toggle-role", { role });
   return res.data;
 };
-
 
 export default {
   login,

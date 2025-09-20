@@ -50,7 +50,34 @@ const User = sequelize.define('User', {
   profilePhoto: {
     type: DataTypes.STRING,  // image path or URL
     allowNull: true
+  },
+  // Current year of study
+  currentYear: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: {
+      min: 1,
+      max: 4
+    },
+    defaultValue: null // ✅ default is null until user sets it
+  },
+  // Average rating across events
+  averageRating: {
+    type: DataTypes.FLOAT,
+    allowNull: true, // can be null until first rating is given
+    validate: {
+      min: 0,
+      max: 5
+    },
+    defaultValue: null
+  },
+  // ✅ Department field
+  department: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: null
   }
+
 }, {
   tableName: 'users',
   timestamps: true

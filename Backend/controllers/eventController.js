@@ -1,5 +1,6 @@
 const Event = require("../models/Event");
 const User = require("../models/User");
+const EventRating = require("../models/EventRating");
 
 // Create new event (only organizers)
 exports.createEvent = async (req, res) => {
@@ -105,6 +106,65 @@ exports.updateEvent = async (req, res) => {
     });
   } catch (error) {
     console.error("Update event error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// --------------------
+// Organizer rates a participant
+// --------------------
+exports.rateParticipant = async (req, res) => {
+  try {
+    const organizerId = req.user.id;
+    const { eventId, participantId, rating } = req.body;
+
+    // Validate rating
+    const ratingNum = parseFloat(rating);
+    if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 5) {
+      return res.status(400).json({ message: "Rating must be a number between 0 and 5" });
+    }
+
+    // Check event exists
+    const event = await Event.findByPk(eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Only organizer can rate
+    if (event.organizerId !== organizerId) {
+      return res.status(403).json({ message: "You are not the organizer of this event" });
+    }
+
+    // Check participant exists
+    const participant = await User.findByPk(participantId);
+    if (!participant) return res.status(404).json({ message: "Participant not found" });
+
+    // Save or update rating
+    const [eventRating, created] = await EventRating.findOrCreate({
+      where: { userId: participantId, eventId: eventId },
+      defaults: { rating: ratingNum },
+    });
+
+    if (!created) {
+      eventRating.rating = ratingNum;
+      await eventRating.save();
+    }
+
+    // Update participant's averageRating
+    const avg = await EventRating.findOne({
+      where: { userId: participantId },
+      attributes: [[EventRating.sequelize.fn('AVG', EventRating.sequelize.col('rating')), 'avgRating']],
+      raw: true,
+    });
+
+    participant.averageRating = parseFloat(parseFloat(avg.avgRating).toFixed(2));
+    await participant.save();
+
+    res.json({
+      message: "Rating submitted successfully",
+      rating: eventRating,
+      participant
+    });
+  } catch (error) {
+    console.error("Rating error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

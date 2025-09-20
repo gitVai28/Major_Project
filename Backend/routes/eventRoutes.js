@@ -6,6 +6,7 @@ const {
   getAllEvents,
   getEventById,
   updateEvent,
+  rateParticipant, // ✅ import rateParticipant
 } = require("../controllers/eventController");
 
 const router = express.Router();
@@ -30,6 +31,15 @@ router.put(
   verifyToken,
   upload.single("banner"),
   updateEvent
+);
+
+// --------------------
+// Rate participant (only organizer)
+// --------------------
+router.post(
+  "/rate",
+  verifyToken,
+  rateParticipant
 );
 
 module.exports = router;

@@ -62,6 +62,8 @@ exports.updateUserProfile = async (req, res) => {
     const interests = body.interests;
     const isOrganizer = body.isOrganizer;
     const isParticipant = body.isParticipant;
+    const currentYear = body.currentYear; // ✅ extract currentYear
+    const department = body.department; // ✅ extract department
 
     // If updating profile photo
     let profilePhotoPath = null;
@@ -81,6 +83,21 @@ exports.updateUserProfile = async (req, res) => {
     if (typeof isOrganizer !== "undefined") user.isOrganizer = (isOrganizer === "true" || isOrganizer === true);
     if (typeof isParticipant !== "undefined") user.isParticipant = (isParticipant === "true" || isParticipant === true);
     if (profilePhotoPath) user.profilePhoto = profilePhotoPath;
+
+    // ✅ Update department
+    if (department) {
+      user.department = department.trim();
+    }
+    // Update currentYear (must be 1–4, cannot be null)
+    if (typeof currentYear === "undefined" || currentYear === null) {
+      return res.status(400).json({ message: "currentYear is required and cannot be null." });
+    }
+
+    const yearNum = parseInt(currentYear, 10);
+    if (![1, 2, 3, 4].includes(yearNum)) {
+      return res.status(400).json({ message: "Invalid currentYear. Must be 1, 2, 3, or 4." });
+    }
+    user.currentYear = yearNum;
 
     await user.save();
 

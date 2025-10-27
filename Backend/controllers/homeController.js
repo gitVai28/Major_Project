@@ -158,4 +158,50 @@ exports.toggleRole = async (req, res) => {
   }
 };
 
+// Search users by skill or interest
+exports.searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query; // search term from query string
+    
+    if (!query || query.trim() === "") {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const searchTerm = query.trim().toLowerCase();
+
+    // Find users where skills or interests arrays contain the search term (case-insensitive, partial match)
+    const users = await User.findAll({
+      where: {
+        [require('sequelize').Op.or]: [
+          require('sequelize').literal(
+            `EXISTS (
+              SELECT 1 FROM unnest(skills) AS skill 
+              WHERE LOWER(skill) LIKE '%${searchTerm}%'
+            )`
+          ),
+          require('sequelize').literal(
+            `EXISTS (
+              SELECT 1 FROM unnest(interests) AS interest 
+              WHERE LOWER(interest) LIKE '%${searchTerm}%'
+            )`
+          )
+        ]
+      },
+      attributes: { exclude: ["password", "otp", "otpExpiry"] },
+      order: [
+        ["averageRating", "DESC NULLS LAST"], // Users with ratings first, then nulls
+        ["createdAt", "DESC"] // Secondary sort by creation date
+      ]
+    });
+
+    res.json({
+      message: "Search completed",
+      count: users.length,
+      users
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ message: "Server error during search" });
+  }
+};
 

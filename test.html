@@ -224,6 +224,18 @@
       </div>
     </div>
 
+    <!-- USER SEARCH -->
+<div class="section">
+  <h2>🔍 Search Users</h2>
+  
+  <h3>Search by Skills or Interests</h3>
+  <form id="searchUsersForm">
+    <input type="text" id="searchQuery" placeholder="Search skills or interests (e.g., JavaScript, Music)" required />
+    <button type="submit" class="success">🔎 Search Users</button>
+  </form>
+  <pre id="searchUsersResult"></pre>
+</div>
+
     <!-- EVENT MANAGEMENT -->
     <div class="section">
       <h2>🎉 Event Management</h2>
@@ -571,6 +583,32 @@
       }
     });
 
+    // Search Users API
+document.getElementById("searchUsersForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!authToken) return showError("searchUsersResult", "Please login first!");
+  
+  try {
+    const query = document.getElementById("searchQuery").value;
+    const res = await fetch(`${API_HOME}/search?query=${encodeURIComponent(query)}`, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + authToken
+      }
+    });
+    
+    const data = await res.json();
+    document.getElementById("searchUsersResult").textContent = formatResponse(data);
+    
+    if (res.ok) {
+      // Optionally show success message at the top
+      const successMsg = `✅ Found ${data.count} user(s) matching "${query}"\n\n`;
+      document.getElementById("searchUsersResult").textContent = successMsg + formatResponse(data);
+    }
+  } catch (error) {
+    showError("searchUsersResult", error.message);
+  }
+});
     // Event APIs
     document.getElementById("createEventForm").addEventListener("submit", async (e) => {
       e.preventDefault();

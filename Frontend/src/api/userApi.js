@@ -1,51 +1,51 @@
-// userApi.js
-import axios from "./axiosConfig";
+import api from "./axiosConfig";
 
-// -------- Existing --------
+// Authentication APIs
 export const login = async (data) => {
-  const res = await axios.post("/users/login", data);
-  return res.data;
-};
-export const register = async (data) => {
-  const res = await axios.post("/users/register", data);
-  return res.data;
-};
-export const verifyEmail = async (data) => {
-  const res = await axios.post("/users/verify-email", data);
+  const res = await api.post("/users/login", data);
   return res.data;
 };
 
-// -------- Dashboard APIs --------
+export const register = async (data) => {
+  const res = await api.post("/users/register", data);
+  return res.data;
+};
+
+export const verifyEmail = async (data) => {
+  const res = await api.post("/users/verify-email", data);
+  return res.data;
+};
+
+// Dashboard APIs
 export const getUserProfile = async () => {
-  const res = await axios.get("/dashboard/user");
+  const res = await api.get("/dashboard/user");
   return res.data;
 };
 
 export const updateUserProfile = async (data) => {
-  const res = await axios.put("/dashboard/user", data);
+  const res = await api.put("/dashboard/user", data);
   return res.data;
 };
 
 export const uploadProfilePhoto = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await axios.post("/dashboard/upload-photo", formData, {
+  const res = await api.post("/dashboard/upload-photo", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
 };
 
 export const deleteUserProfile = async () => {
-  const res = await axios.delete("/dashboard/user");
+  const res = await api.delete("/dashboard/user");
   return res.data;
 };
 
-
+// Role toggle
 export const toggleRole = async (role) => {
-  const res = await axios.put("/dashboard/toggle-role", { role });
+  const res = await api.put("/dashboard/toggle-role", { role });
   return res.data;
 };
-
 
 export default {
   login,

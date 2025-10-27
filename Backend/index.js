@@ -1,23 +1,30 @@
 const express = require('express');
 require('dotenv').config();
-const sequelize = require('./config/db');
-const User = require('./models/User');
-// index.js
 const cors = require('cors');
+const sequelize = require('./config/db');
 
-
+// Import associations to set up all model relationships
+require('./models/associations');
 
 const app = express();
+
+// ------------------ Middleware ------------------
 app.use(express.json());
 app.use(cors());
 
 // ------------------ Import Routes ------------------
 const userRoutes = require('./routes/userRoutes');
 const homeRoutes = require('./routes/homeRoutes');
+const eventRoutes = require("./routes/eventRoutes");
+const registrationRoutes = require("./routes/registrationRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 // ------------------ Use Routes ------------------
 app.use('/api/home', homeRoutes); // all home routes prefixed with /api/home
 app.use('/api/users', userRoutes); // all user routes prefixed with /api/users
+app.use("/api/events", eventRoutes);
+app.use("/api/registrations", registrationRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Test route
 app.get('/', (req, res) => {

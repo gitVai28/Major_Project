@@ -46,7 +46,7 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true
   },
-  // New field
+  // Profile photo
   profilePhoto: {
     type: DataTypes.STRING,  // image path or URL
     allowNull: true
@@ -55,4 +55,5 @@ const User = sequelize.define('User', {
   tableName: 'users',
   timestamps: true
 });
+
 module.exports = User;

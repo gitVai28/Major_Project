@@ -3,7 +3,7 @@ import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import VerifyEmail from "./Pages/VerifyEmail";
-import Dashboard from "./Pages/Dashboard";
+import Dashboard from "./Pages/Dashboard/Dashboard";
 import { useAuth } from "./context/AuthContext";
 
 function App() {
@@ -22,9 +22,10 @@ function App() {
 
       {/* Protected Dashboard */}
       <Route
-        path="/dashboard"
-        element={user ? <Dashboard /> : <Navigate to="/login" />}
-      />
+  path="/Dashboard"
+  element={user ? <Dashboard /> : <Navigate to="/login" />}
+/>
+
 
       {/* Catch all unknown routes */}
       <Route path="*" element={<Navigate to="/" />} />

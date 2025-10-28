@@ -20,18 +20,31 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
+  // 🟢 Login / Set user & token
   const login = (userData, token) => {
     if (!userData?.name) {
-      console.warn("⚠️ userData has no 'name' field, please check backend response");
+      console.warn("⚠️ userData has no 'name' field, check backend response");
     }
 
     setUser(userData);
     setToken(token);
-
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
+  // 🟣 Refresh after role toggle
+  const updateUserAfterToggle = (updatedUser, newToken) => {
+    if (newToken) {
+      setToken(newToken);
+      localStorage.setItem("token", newToken);
+    }
+    if (updatedUser) {
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
+  // 🔴 Logout
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -40,7 +53,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, setUser, token, login, logout, updateUserAfterToggle }}
+    >
       {children}
     </AuthContext.Provider>
   );

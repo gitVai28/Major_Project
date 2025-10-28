@@ -25,6 +25,8 @@ app.use('/api/users', userRoutes); // all user routes prefixed with /api/users
 app.use("/api/events", eventRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/uploads", express.static("uploads"));
+
 
 // Test route
 app.get('/', (req, res) => {

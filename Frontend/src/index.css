@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* ensure full height root */
+html, body, #root { height: 100%; }
+
+/* global font & smoothing */
 body {
-  @apply font-sans bg-gray-50 text-gray-800;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* subtle background gradient like your screenshot */
+body.bg-gradient-dashboard {
+  background: linear-gradient(180deg, rgba(245,246,255,1) 0%, rgba(238,249,255,1) 100%);
+}
+
+/* small shadow style for cards */
+.card-shadow {
+  box-shadow: 0 10px 30px rgba(16,24,40,0.06);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
 }

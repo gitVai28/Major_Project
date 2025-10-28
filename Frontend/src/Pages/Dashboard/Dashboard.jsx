@@ -1,218 +1,172 @@
-import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import {
-  getUserProfile,
-  uploadProfilePhoto,
-  updateUserProfile,
-  deleteUserProfile,
-  toggleRole,
-} from "../../api/userApi";
-
+import React, { useState } from "react";
+import Navbar from "../../components/Navbar";
 import ParticipantDashboard from "./ParticipantDashboard";
 import OrganizerDashboard from "./OrganizerDashboard";
-import InfoRow from "../../components/InfoRow";
+import ProfileModal from "../../components/ProfileModal";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Dashboard() {
-  const { user, setUser, token, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [appliedEvents, setAppliedEvents] = useState([]);
+  const [postedEvents, setPostedEvents] = useState([]);
 
-  const [profileImage, setProfileImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [showProfile, setShowProfile] = useState(false);
-  const [isToggling, setIsToggling] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const fileInputRef = useRef(null);
+  if (!user) return null;
 
-  useEffect(() => {
-    if (user && token) loadProfile();
-  }, [user, token]);
-
-  const loadProfile = async () => {
-    try {
-      const data = await getUserProfile();
-      if (data.profilePhoto && !data.profilePhoto.startsWith("http")) {
-        data.profilePhoto = `http://localhost:5000${data.profilePhoto}`;
-      }
-      setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
-    } catch (error) {
-      console.error("Failed to load profile:", error);
-    }
+  // 💡 Apply for an event (participant)
+  const handleApply = (event) => {
+    setSelectedEvent(event);
+    setShowApplyModal(true);
   };
 
-  const handleUploadPhoto = async () => {
-    if (!profileImage) return alert("Please select a photo first!");
-    try {
-      const res = await uploadProfilePhoto(profileImage);
-      const fullPhotoUrl = res.photoUrl.startsWith("http")
-        ? res.photoUrl
-        : `http://localhost:5000${res.photoUrl}`;
-
-      const updatedUser = { ...user, profilePhoto: fullPhotoUrl };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-
-      alert(res.message);
-      setProfileImage(null);
-      setPreviewUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    } catch (error) {
-      console.error("Upload error:", error);
-      alert("Upload failed");
-    }
+  // 💡 Confirm apply
+  const confirmApply = () => {
+    setAppliedEvents((prev) => [...prev, selectedEvent]);
+    alert(`Successfully applied for "${selectedEvent.title}"!`);
+    setShowApplyModal(false);
   };
 
-  const handleToggleRole = async () => {
-    if (!token) return alert("User not authenticated!");
-    try {
-      setIsToggling(true);
-      const newRole = user?.isOrganizer ? "participant" : "organizer";
-      const res = await toggleRole(newRole, token); // pass token here
-      setUser(res.user);
-      localStorage.setItem("user", JSON.stringify(res.user));
-      alert(res.message);
-    } catch (error) {
-      console.error(error);
-      alert("Role toggle failed");
-    } finally {
-      setIsToggling(false);
-    }
-  };
-
-  const handleDeleteProfile = async () => {
-    if (!window.confirm("Are you sure you want to delete your profile?")) return;
-    try {
-      await deleteUserProfile();
-      logout();
-      navigate("/login");
-    } catch (error) {
-      console.error(error);
-      alert("Delete failed");
-    }
+  // 💡 Post new event (organizer)
+  const handlePostEvent = (newEvent) => {
+    setPostedEvents((prev) => [...prev, newEvent]);
+    alert(`Event "${newEvent.title}" posted successfully!`);
+    setShowPostModal(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Navbar */}
-      <nav className="bg-white shadow-md sticky top-0 z-50 w-full">
-        <div className="max-w-7xl mx-auto flex justify-between items-center py-4 px-6">
-          <div className="flex items-center space-x-2 text-purple-600 font-bold text-2xl">
-            🏆 EventHub
-          </div>
-          <ul className="flex items-center space-x-6 text-lg font-medium">
-            <li>
-              <button onClick={() => setShowProfile(false)} className="hover:text-purple-600">
-                Dashboard
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={handleToggleRole}
-                disabled={isToggling}
-                className="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-              >
-                Switch to {user?.isOrganizer ? "Participant" : "Organizer"}
-              </button>
-            </li>
-            <li>
-              <button className="p-2 rounded-full hover:bg-gray-100">🔔</button>
-            </li>
-            <li>
-              <button onClick={() => setShowProfile(true)}>
-                <img
-                  src={user?.profilePhoto || "/default-avatar.png"}
-                  alt="Profile"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={logout}
-                className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
 
-      <div className="max-w-7xl mx-auto p-6">
-        {!showProfile ? (
-          user?.isOrganizer ? (
-            <OrganizerDashboard />
-          ) : (
-            <ParticipantDashboard />
-          )
+      <main className="max-w-7xl mx-auto p-6">
+        {user.role === "organizer" ? (
+          <OrganizerDashboard
+            postedEvents={postedEvents}
+            onPostEvent={() => setShowPostModal(true)}
+          />
         ) : (
-          <>
-            {/* Profile Page */}
-            <div className="bg-white p-8 rounded-2xl shadow-md">
-              <div className="flex items-center gap-6 mb-6">
-                <img
-                  src={previewUrl || user?.profilePhoto || "/default-avatar.png"}
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full object-cover border-2 border-purple-600"
-                />
-                <div>
-                  <h2 className="text-2xl font-bold">My Profile</h2>
-                  <p className="text-gray-600">Manage your account details</p>
-                </div>
-              </div>
-
-              {/* Upload */}
-              <div className="flex gap-3 mb-6">
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      setProfileImage(file);
-                      setPreviewUrl(URL.createObjectURL(file));
-                    }
-                  }}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="bg-purple-500 text-white px-4 py-2 rounded-lg"
-                >
-                  Select Photo
-                </button>
-                <button
-                  onClick={handleUploadPhoto}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                >
-                  Upload
-                </button>
-              </div>
-
-              {/* Editable Info */}
-              <InfoRow
-                label="Name"
-                value={user?.name}
-                onSave={(val) => updateUserProfile({ name: val })}
-              />
-              <InfoRow label="Email" value={user?.email} readOnly />
-              <InfoRow label="Skills" value={user?.skills?.join(", ")} />
-              <InfoRow label="Interests" value={user?.interests?.join(", ")} />
-
-              {/* Danger Zone */}
-              <div className="mt-6 border-t pt-4">
-                <button
-                  onClick={handleDeleteProfile}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg"
-                >
-                  Delete My Account
-                </button>
-              </div>
-            </div>
-          </>
+          <ParticipantDashboard
+            appliedEvents={appliedEvents}
+            onApply={handleApply}
+          />
         )}
+      </main>
+
+      {/* Apply Modal */}
+      {showApplyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg w-[400px] text-center">
+            <h2 className="text-lg font-semibold mb-3">
+              Apply for {selectedEvent?.title}
+            </h2>
+            <p className="text-sm text-gray-500 mb-5">
+              Confirm to apply for this event as a participant.
+            </p>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setShowApplyModal(false)}
+                className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmApply}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post Event Modal */}
+      {showPostModal && (
+        <PostEventModal
+          onClose={() => setShowPostModal(false)}
+          onPost={handlePostEvent}
+        />
+      )}
+    </div>
+  );
+}
+
+// 🟩 Post Event Modal (Organizer)
+function PostEventModal({ onClose, onPost }) {
+  const [form, setForm] = useState({
+    title: "",
+    date: "",
+    tags: "",
+    description: "",
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = () => {
+    if (!form.title || !form.date) {
+      alert("Please fill all required fields.");
+      return;
+    }
+    const newEvent = {
+      title: form.title,
+      date: form.date,
+      description: form.description,
+      tags: form.tags.split(",").map((t) => t.trim()),
+      applicants: 0,
+    };
+    onPost(newEvent);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-2xl shadow-xl w-[400px]">
+        <h2 className="text-xl font-semibold mb-4 text-center">Post New Event</h2>
+        <input
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          placeholder="Event Title"
+          className="w-full border rounded-lg px-3 py-2 mb-3"
+        />
+        <input
+          type="date"
+          name="date"
+          value={form.date}
+          onChange={handleChange}
+          className="w-full border rounded-lg px-3 py-2 mb-3"
+        />
+        <input
+          name="tags"
+          value={form.tags}
+          onChange={handleChange}
+          placeholder="Tags (comma separated)"
+          className="w-full border rounded-lg px-3 py-2 mb-3"
+        />
+        <textarea
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          placeholder="Event Description"
+          className="w-full border rounded-lg px-3 py-2 mb-4"
+        />
+        <div className="flex justify-between">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Post Event
+          </button>
+        </div>
       </div>
     </div>
   );

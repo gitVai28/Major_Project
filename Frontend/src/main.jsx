@@ -1,17 +1,26 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
-import { AuthProvider } from "./context/AuthContext";
 import "./index.css";
-import { Toaster } from "react-hot-toast"; 
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+// ✅ Import all providers
+import { AuthProvider } from "./context/AuthContext";
+import { EventProvider } from "./context/EventContext";
+import { RegistrationProvider } from "./context/RegistrationContext";
+import { MessageProvider } from "./context/MessageContext";
+
+createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
-        <Toaster position="top-right" reverseOrder={false} />
+        <EventProvider>
+          <RegistrationProvider>
+            <MessageProvider>
+              <App />
+            </MessageProvider>
+          </RegistrationProvider>
+        </EventProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

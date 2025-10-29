@@ -26,55 +26,51 @@ export default function OrganizerDashboard() {
     fetchMyEvents();
   }, []);
 
-// ✅ Fetch organizer's events (fixed version)
-// ✅ Fetch organizer's events (fixed version)
-const fetchMyEvents = async () => {
-  try {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  const fetchMyEvents = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const res = await api.get("/events", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const res = await api.get("/events", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    // ✅ Backend returns all events — filter by organizerId (the logged-in user)
-    const allEvents = Array.isArray(res.data) ? res.data : [];
-    const myEvents = allEvents.filter(
-      (event) => event.organizerId === storedUser.id || event.organizerId === storedUser._id
-    );
+      const allEvents = Array.isArray(res.data) ? res.data : [];
+      const myEvents = allEvents.filter(
+        (event) => event.organizerId === storedUser.id || event.organizerId === storedUser._id
+      );
 
-    setMyEvents(myEvents);
+      setMyEvents(myEvents);
 
-    // ✅ Calculate total applicants dynamically
-    const totalApps = myEvents.reduce(
-      (sum, ev) => sum + (ev.participantsCount || ev.applicants?.length || 0),
-      0
-    );
+      const totalApps = myEvents.reduce(
+        (sum, ev) => sum + (ev.participantsCount || ev.applicants?.length || 0),
+        0
+      );
 
-    setStats({
-      eventsOrganized: myEvents.length,
-      totalApplicants: totalApps,
-      messages: 0,
-      followers: 0,
-    });
-  } catch (err) {
-    console.error("Error fetching my events:", err);
-    toast.error("Failed to load your events");
-  } finally {
-    setLoading(false);
-  }
-};
+      setStats({
+        eventsOrganized: myEvents.length,
+        totalApplicants: totalApps,
+        messages: 0,
+        followers: 0,
+      });
+    } catch (err) {
+      console.error("Error fetching my events:", err);
+      toast.error("Failed to load your events");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-  // View participants for an event
+  // View participants for an event - FIXED
   const handleViewApplicants = async (event) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await api.get(`/registrations/${event._id}/participants`, {
+      // ✅ Use event.id instead of event._id (Sequelize uses 'id')
+      const res = await api.get(`/registrations/${event.id}/participants`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -83,16 +79,17 @@ const fetchMyEvents = async () => {
       setShowParticipants(true);
     } catch (err) {
       console.error("Error fetching participants:", err);
-      toast.error("Failed to load participants");
+      toast.error(err.response?.data?.message || "Failed to load participants");
     }
   };
 
-  // Send message to participants
+  // Send message to participants - FIXED
   const handleSendMessage = async (eventId, subject, message) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
 
+      // ✅ Correct API endpoint and payload
       const res = await api.post(
         `/messages/${eventId}/message`,
         { subject, message },
@@ -128,6 +125,7 @@ const fetchMyEvents = async () => {
 
   return (
     <>
+      <Toaster />
       {/* Header */}
       <div className="bg-gradient-to-r from-green-600 to-teal-500 text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center mb-8 shadow-xl">
         <div>
@@ -198,7 +196,7 @@ const fetchMyEvents = async () => {
       ) : (
         <div className="space-y-6">
           {myEvents.map((event) => (
-            <div key={event._id} className="relative">
+            <div key={event.id} className="relative">
               <OpportunityCard
                 title={event.title}
                 tags={[event.location || "Location TBD", ...(event.tags || [])]}
@@ -435,18 +433,23 @@ function PostEventModal({ onClose, onSuccess }) {
   );
 }
 
-// Participants Modal
+// Participants Modal - Table Format
 function ParticipantsModal({ event, participants, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8 max-h-[80vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl p-8 max-h-[85vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
-            👥 Applicants for "{event.title}"
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">
+              👥 Applicants for "{event.title}"
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Total Participants: {participants.length}
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
           >
             ✕
           </button>
@@ -455,51 +458,105 @@ function ParticipantsModal({ event, participants, onClose }) {
         {participants.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📭</div>
-            <p className="text-gray-600">No applicants yet</p>
+            <p className="text-gray-600 text-lg">No applicants yet</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {participants.map((participant, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-green-300 transition"
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
-                  {participant.name?.charAt(0) || "U"}
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-800">
-                    {participant.name || "Unknown"}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {participant.email || "No email"}
-                  </div>
-                  {participant.skills && participant.skills.length > 0 && (
-                    <div className="flex gap-2 mt-2">
-                      {participant.skills.slice(0, 3).map((skill, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full"
-                        >
-                          {skill}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gradient-to-r from-green-50 to-teal-50">
+                  <th className="text-left p-4 font-semibold text-gray-700 border-b-2 border-green-200">
+                    #
+                  </th>
+                  <th className="text-left p-4 font-semibold text-gray-700 border-b-2 border-green-200">
+                    Name
+                  </th>
+                  <th className="text-left p-4 font-semibold text-gray-700 border-b-2 border-green-200">
+                    Email
+                  </th>
+                  <th className="text-left p-4 font-semibold text-gray-700 border-b-2 border-green-200">
+                    Skills
+                  </th>
+                  <th className="text-left p-4 font-semibold text-gray-700 border-b-2 border-green-200">
+                    Interests
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants.map((participant, index) => (
+                  <tr
+                    key={participant.id}
+                    className="border-b border-gray-100 hover:bg-green-50 transition"
+                  >
+                    <td className="p-4 text-gray-600 font-medium">
+                      {index + 1}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-teal-500 flex items-center justify-center text-white font-bold">
+                          {participant.name?.charAt(0)?.toUpperCase() || "U"}
+                        </div>
+                        <span className="font-semibold text-gray-800">
+                          {participant.name || "Unknown"}
                         </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs text-gray-400">
-                  {new Date(participant.registeredAt).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-600">
+                      {participant.email || "No email provided"}
+                    </td>
+                    <td className="p-4">
+                      {participant.skills && participant.skills.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {participant.skills.map((skill, idx) => (
+                            <span
+                              key={idx}
+                              className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm">No skills listed</span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {participant.interests && participant.interests.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {participant.interests.map((interest, idx) => (
+                            <span
+                              key={idx}
+                              className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-medium"
+                            >
+                              {interest}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm">No interests listed</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
+
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 font-semibold transition"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// Message Modal
+// Message Modal - FIXED to use event.id
 function MessageModal({ event, onClose, onSend }) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -513,7 +570,8 @@ function MessageModal({ event, onClose, onSend }) {
 
     setSending(true);
     try {
-      await onSend(event._id, subject, message);
+      // ✅ Use event.id instead of event._id
+      await onSend(event.id, subject, message);
     } finally {
       setSending(false);
     }

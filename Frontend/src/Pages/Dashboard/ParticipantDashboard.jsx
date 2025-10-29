@@ -17,11 +17,11 @@ export default function ParticipantDashboard() {
     rating: "4.8",
   });
 
-  // Fetch all available events
+  // Fetch all available events and load applications from localStorage
   useEffect(() => {
     fetchEvents();
-    fetchMyApplications();
-  }, []);
+    loadMyApplicationsFromStorage();
+  }, [user]);
 
   const fetchEvents = async () => {
     try {
@@ -36,31 +36,28 @@ export default function ParticipantDashboard() {
     }
   };
 
-  const fetchMyApplications = async () => {
+  const loadMyApplicationsFromStorage = () => {
+    if (!user?.id) return;
+    
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const res = await api.get("/registrations/my-applications", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const apps = res.data?.registrations || res.data || [];
-      setMyApplications(apps);
-
-      setStats((prev) => ({
-        ...prev,
-        activeApplications: apps.length,
-        eventsRegistered: apps.length,
-      }));
+      const stored = localStorage.getItem(`applications_${user.id}`);
+      if (stored) {
+        const apps = JSON.parse(stored);
+        setMyApplications(apps);
+        setStats((prev) => ({
+          ...prev,
+          activeApplications: apps.length,
+          eventsRegistered: apps.length,
+        }));
+      }
     } catch (err) {
-      console.error("Error fetching applications:", err);
+      console.error("Error loading applications:", err);
     }
   };
 
   // Apply for event
   const handleApply = async (event) => {
-    if (!event || !event._id) {
+    if (!event || !event.id) {
       toast.error("Invalid event");
       return;
     }
@@ -72,9 +69,10 @@ export default function ParticipantDashboard() {
         return;
       }
 
+      // Call the backend API with correct eventId (without underscore)
       const res = await api.post(
         "/registrations/register",
-        { eventId: event._id },
+        { eventId: event.id }, // Use event.id, not event._id
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -85,7 +83,35 @@ export default function ParticipantDashboard() {
 
       if (res.status === 200 || res.status === 201) {
         toast.success(`Successfully applied for "${event.title}"!`);
-        fetchMyApplications();
+        
+        // Save application to localStorage
+        const newApplication = {
+          id: `${user.id}_${event.id}_${Date.now()}`,
+          eventId: event.id,
+          event: {
+            id: event.id,
+            title: event.title,
+          },
+          registeredAt: new Date().toISOString(),
+        };
+        
+        const currentApps = JSON.parse(
+          localStorage.getItem(`applications_${user.id}`) || '[]'
+        );
+        const updatedApps = [...currentApps, newApplication];
+        localStorage.setItem(
+          `applications_${user.id}`,
+          JSON.stringify(updatedApps)
+        );
+        
+        setMyApplications(updatedApps);
+        setStats((prev) => ({
+          ...prev,
+          activeApplications: updatedApps.length,
+          eventsRegistered: updatedApps.length,
+        }));
+        
+        // Refresh events to update participant counts
         fetchEvents();
       }
     } catch (err) {
@@ -99,7 +125,7 @@ export default function ParticipantDashboard() {
   // Check if user has already applied
   const hasApplied = (eventId) => {
     return myApplications.some(
-      (app) => app.eventId === eventId || app.event?._id === eventId
+      (app) => app.eventId === eventId || app.event?.id === eventId
     );
   };
 
@@ -177,7 +203,7 @@ export default function ParticipantDashboard() {
       ) : (
         <div className="space-y-6">
           {events.map((event) => {
-            const applied = hasApplied(event._id);
+            const applied = hasApplied(event.id);
             const tags = [
               event.location || "Location TBD",
               ...(event.tags || []),
@@ -185,7 +211,7 @@ export default function ParticipantDashboard() {
 
             return (
               <OpportunityCard
-                key={event._id}
+                key={event.id}
                 title={event.title}
                 tags={tags}
                 applicants={event.participantsCount || "0"}
@@ -209,9 +235,9 @@ export default function ParticipantDashboard() {
           </h2>
           <div className="bg-white rounded-2xl p-6 shadow-md">
             <div className="space-y-4">
-              {myApplications.map((app, i) => (
+              {myApplications.map((app) => (
                 <div
-                  key={i}
+                  key={app.id}
                   className="p-4 rounded-lg border border-gray-200 flex justify-between items-center hover:border-purple-300 transition"
                 >
                   <div>
